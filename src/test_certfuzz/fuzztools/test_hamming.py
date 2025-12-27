@@ -90,7 +90,7 @@ class Test(unittest.TestCase):
 
         # does it work with bytearrays?
         for x, y in itertools.product([s1, s2, s3], [s1, s2, s3]):
-            self.assertEqual(bytemap(bytearray(x), bytearray(y)), bytemap(x, y))
+            self.assertEqual(bytemap(bytearray(x, 'ascii'), bytearray(y, 'ascii')), bytemap(x, y))
 
         # reject strings of different length
         self.assertRaises(AssertionError, bytemap, s1, s2 + "foo")
@@ -98,10 +98,10 @@ class Test(unittest.TestCase):
     def test_bitwise_hamming_distance(self):
         # set up some temp files
         # set up some temp files
-        f1d = open(self.f1, 'w')
-        f2d = open(self.f2, 'w')
-        f1d.write("aaaaaaaaa")
-        f2d.write("acaacaxac")
+        f1d = open(self.f1, 'wb')
+        f2d = open(self.f2, 'wb')
+        f1d.write(b"aaaaaaaaa")
+        f2d.write(b"acaacaxac")
         f1d.close()
         f2d.close()
 

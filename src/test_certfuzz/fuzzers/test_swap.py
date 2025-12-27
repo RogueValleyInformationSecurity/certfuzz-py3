@@ -26,27 +26,27 @@ class Test(unittest.TestCase):
         shutil.rmtree(self.tempdir, ignore_errors=True)
 
     def test_fuzz(self):
-        self.sf.value = "ABCDE"
+        self.sf.value = b"ABCDE"
         with SwapFuzzer(*self.args) as f:
             self.assertEqual(f.output, None)
             self.sf.tries = 0
             f._fuzz()
-            self.assertEqual(f.output, "BACDE")
+            self.assertEqual(f.output, bytearray(b"BACDE"))
 
-        self.sf.value = "ABCDE"
+        self.sf.value = b"ABCDE"
         with SwapFuzzer(*self.args) as f:
             self.assertEqual(f.output, None)
             self.sf.tries = 1
-            self.sf.value = "ABCDE"
+            self.sf.value = b"ABCDE"
             f._fuzz()
-            self.assertEqual(f.output, "ACBDE")
+            self.assertEqual(f.output, bytearray(b"ACBDE"))
 
-        self.sf.value = "ABCDE"
+        self.sf.value = b"ABCDE"
         with SwapFuzzer(*self.args) as f:
             self.sf.tries = 3
-            self.sf.value = "ABCDE"
+            self.sf.value = b"ABCDE"
             f._fuzz()
-            self.assertEqual(f.output, "ABCED")
+            self.assertEqual(f.output, bytearray(b"ABCED"))
 
     def test_fuzz_out_of_range(self):
         self.sf.tries = len(self.sf.value)

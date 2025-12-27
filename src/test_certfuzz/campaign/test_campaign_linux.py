@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
 #                 'runoptions':{'first_iteration':0,
 #                               'seed_interval': 10}
 #                 }
-        with open(cfgfile, 'wb') as stream:
+        with open(cfgfile, 'w') as stream:
             yaml.dump(data, stream)
 
         self.campaign = LinuxCampaign(cfgfile)
@@ -52,8 +52,8 @@ class Test(unittest.TestCase):
 
 
     def test_check_program_file_type(self):
-        fd, fname = tempfile.mkstemp(dir=self.tmpdir, text=True)
-        os.write(fd, 'sometext')
+        fd, fname = tempfile.mkstemp(dir=self.tmpdir)
+        os.write(fd, b'sometext')
         os.close(fd)
         self.assertTrue(check_program_file_type('text', fname))
 

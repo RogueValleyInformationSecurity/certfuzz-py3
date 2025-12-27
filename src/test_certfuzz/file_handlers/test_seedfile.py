@@ -15,7 +15,7 @@ class Test(unittest.TestCase):
     def setUp(self):
         (fd, self.file) = tempfile.mkstemp()
         self.dir = tempfile.mkdtemp()
-        self.content = "I'm here and I'm ready. They're not. Bring it."
+        self.content = b"I'm here and I'm ready. They're not. Bring it."
         os.write(fd, self.content)
         os.close(fd)
         self.sf = SeedFile(self.dir, self.file)

@@ -14,14 +14,14 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         self.tempdir = tempfile.mkdtemp()
-        self.emptymd5 = hashlib.md5('').hexdigest()
+        self.emptymd5 = hashlib.md5(b'').hexdigest()
 
         (fd1, self.f1) = tempfile.mkstemp(dir=self.tempdir)
         os.close(fd1)
         self.emptybasicfile = BasicFile(self.f1)
 
         (fd2, self.f2) = tempfile.mkstemp(dir=self.tempdir)
-        self.content = "I'm here and I'm ready. They're not. Bring it."
+        self.content = b"I'm here and I'm ready. They're not. Bring it."
         os.write(fd2, self.content)
         os.close(fd2)
         self.basicfile = BasicFile(self.f2)

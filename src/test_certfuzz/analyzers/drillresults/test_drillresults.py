@@ -114,9 +114,9 @@ class Test(unittest.TestCase):
 
         with open(f, 'rb') as fp:
             contents = fp.read()
-            self.assertTrue('a' in contents)
-            self.assertTrue('b' in contents)
-            self.assertTrue('c' in contents)
+            self.assertTrue(b'a' in contents)
+            self.assertTrue(b'b' in contents)
+            self.assertTrue(b'c' in contents)
 
     def test_getfile(self):
         x = 'asdfghjklqwertyuiop'

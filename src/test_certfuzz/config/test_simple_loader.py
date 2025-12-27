@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
             thing = dict([(y, x) for x, y in enumerate("abcd")])
         fd, f = tempfile.mkstemp(suffix='yaml', dir=self.tempdir)
         os.close(fd)
-        with open(f, 'wb') as fd:
+        with open(f, 'w') as fd:
             yaml.dump(thing, fd)
 
         return thing, f

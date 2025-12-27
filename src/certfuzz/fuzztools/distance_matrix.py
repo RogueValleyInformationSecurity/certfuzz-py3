@@ -6,7 +6,7 @@ Created on Aug 19, 2011
 import sys
 import os
 import numpy
-import hcluster
+from scipy.cluster import hierarchy
 import logging
 from certfuzz.fuzztools.errors import DistanceMatrixError
 
@@ -25,14 +25,14 @@ class DistanceMatrix(object):
         self.cluster_method = self.get_cluster_method()
 
         self.Z = self.cluster_method(self.distance_matrix)
-        self.node = hcluster.to_tree(self.Z)
+        self.node = hierarchy.to_tree(self.Z)
         self.print_node(self.node, self.keys)
 
         self.image_file = None
 
     def get_keys(self):
         # make sure we have matched sets
-        pairs = self.sim.keys()
+        pairs = list(self.sim.keys())
         p1 = set()
         p2 = set()
         for (x, y) in pairs:
@@ -75,19 +75,19 @@ class DistanceMatrix(object):
         # ward: the Ward/incremental alg
         logger.debug('Alg = %s', algorithm)
         if algorithm == 'average':
-            return hcluster.average
+            return hierarchy.average
         elif algorithm == 'single':
-            return hcluster.single
+            return hierarchy.single
         elif algorithm == 'complete':
-            return hcluster.complete
+            return hierarchy.complete
         elif algorithm == 'weighted':
-            return hcluster.weighted
+            return hierarchy.weighted
         elif algorithm == 'centroid':
-            return hcluster.centroid
+            return hierarchy.centroid
         elif algorithm == 'median':
-            return hcluster.median
+            return hierarchy.median
         elif algorithm == 'ward':
-            return hcluster.ward
+            return hierarchy.ward
         else:
             sys.exit('Alg must be one of (average, single, complete, weighted, centroid, median, ward)')
 
@@ -100,7 +100,7 @@ class DistanceMatrix(object):
             label = '|- ' + crash_id
         else:
             label = '%d, %f' % (node.id, node.dist)
-        print '%s%s' % (prefix, label)
+        print('%s%s' % (prefix, label))
         if node.left:
             self.print_node(node.left, labels, depth + 1)
         if node.right:
@@ -132,7 +132,7 @@ class DistanceMatrix(object):
 
         # Draw the first node
         self.drawnode(draw, self.node, 10, (h / 2), scaling)
-        print "Saving image to %s" % self.image_file
+        print("Saving image to %s" % self.image_file)
         img.save(self.image_file)
 
     def getheight(self, clust):

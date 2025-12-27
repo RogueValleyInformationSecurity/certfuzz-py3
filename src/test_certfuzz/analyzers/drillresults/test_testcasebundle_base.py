@@ -64,9 +64,9 @@ class Test(unittest.TestCase):
         tcf = os.path.join(self.tmpdir, '_testcasefile')
         crash_sig = 'abracadabra'
         with open(dbgf, 'wb') as fp:
-            fp.write('foo\n')
+            fp.write(b'foo\n')
         with open(tcf, 'wb') as fp:
-            fp.write('bar\n')
+            fp.write(b'bar\n')
         return TCB(dbgf, tcf, crash_sig)
 
     def test_init(self):
@@ -78,13 +78,13 @@ class Test(unittest.TestCase):
         self.assertRaises(TestCaseBundleError, TCB, dbgf, tcf, crash_sig)
 
         with open(dbgf, 'wb') as fp:
-            fp.write('foo\n')
+            fp.write(b'foo\n')
 
         # the tc don't exist. we should get an error
         self.assertRaises(TestCaseBundleError, TCB, dbgf, tcf, crash_sig)
 
         with open(tcf, 'wb') as fp:
-            fp.write('bar\n')
+            fp.write(b'bar\n')
 
         tcb = TCB(dbgf, tcf, crash_sig)
         self.assertEqual(dbgf, tcb.dbg_outfile)
@@ -111,7 +111,7 @@ class Test(unittest.TestCase):
     def test_format_addr(self):
         # not 64 bit
         self.tcb._64bit_target_app = False
-        for x in xrange(15):
+        for x in range(15):
             faddr = 'a' * (x + 1)
             faddr_hex = '0x' + faddr
             result = self.tcb.format_addr(faddr_hex)
@@ -124,7 +124,7 @@ class Test(unittest.TestCase):
 
         # 64 bit padding
         self.tcb._64bit_target_app = True
-        for x in xrange(15):
+        for x in range(15):
             faddr = 'a' * (x + 1)
             faddr_hex = '0x' + faddr
             result = self.tcb.format_addr(faddr_hex)

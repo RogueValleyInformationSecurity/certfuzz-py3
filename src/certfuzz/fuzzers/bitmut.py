@@ -1,5 +1,5 @@
 from certfuzz.fuzzers.fuzzer_base import MinimizableFuzzer
-from random import jumpahead, sample, uniform, seed
+from random import sample, uniform, seed
 import logging
 
 logger = logging.getLogger(__name__)
@@ -14,9 +14,10 @@ class BitMutFuzzer(MinimizableFuzzer):
     '''
     def _fuzz(self):
         """Twiddle bits of input_file_path and write output to output_file_path"""
-        # rng_seed is the based on the input file
-        seed(self.rng_seed)
-        jumpahead(self.iteration)
+        # rng_seed is based on the input file, combined with iteration for reproducibility
+        # (replaces jumpahead which was removed in Python 3)
+        # Combine into single integer (tuples not supported in Python 3.11+)
+        seed(hash((self.rng_seed, self.iteration)) & 0xFFFFFFFF)
 
         # select a ratio of bytes to fuzz
         self.range = self.sf.rangefinder.next_item()
@@ -42,10 +43,10 @@ class BitMutFuzzer(MinimizableFuzzer):
                     logger.debug('Reset range end from to %s to %s (file length exceeded)', end, last)
 
                 # seems legit...proceed
-                chooselist.extend(xrange(start, last + 1))
+                chooselist.extend(range(start, last + 1))
         else:
             # they're all available to fuzz
-            chooselist.extend(xrange(len(self.input)))
+            chooselist.extend(range(len(self.input)))
 
         # build the list of bits we're allowed to flip
         # since chooselist is the list of bytes we can fuzz
@@ -54,7 +55,7 @@ class BitMutFuzzer(MinimizableFuzzer):
         protobitlist = [x * 8 for x in chooselist]
         bitlist = []
         for b in protobitlist:
-            for i in xrange(0, 8):
+            for i in range(0, 8):
                 # here we fill in the actual bits we are
                 # allowed to fuzz
                 # this will add b, b+1, b+2...b+7

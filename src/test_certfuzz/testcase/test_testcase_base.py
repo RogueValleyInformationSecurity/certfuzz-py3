@@ -59,13 +59,13 @@ class Test(unittest.TestCase):
         fd, tc.seedfile.path = tempfile.mkstemp(suffix='.seed',
                                                 prefix='bff-test-',
                                                 dir=self.tmpdir)
-        os.write(fd, 'abcdefghijklmnopqrstuvwxyz\n')
+        os.write(fd, b'abcdefghijklmnopqrstuvwxyz\n')
         os.close(fd)
 
         fd, tc.fuzzedfile.path = tempfile.mkstemp(suffix='.fuzzed',
                                                   prefix='bff-test-',
                                                   dir=self.tmpdir)
-        os.write(fd, 'ABCDefghijklmnopqrstuvwxyz\n')
+        os.write(fd, b'ABCDefghijklmnopqrstuvwxyz\n')
         os.close(fd)
 
         self.assertEqual(None, tc.hd_bits)

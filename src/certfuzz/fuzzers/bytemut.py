@@ -15,10 +15,14 @@ def fuzz(fuzz_input=None, seed_val=None, jump_idx=None, ratio_min=0.0,
     '''
     logging.debug('fuzz params: %d %d %f %f %s', seed_val, jump_idx, ratio_min, ratio_max, range_list)
 
+    # Combine seed_val and jump_idx for reproducibility
+    # (replaces jumpahead which was removed in Python 3)
     if seed_val is not None:
-        random.seed(seed_val)
-    if jump_idx is not None:
-        random.jumpahead(jump_idx)
+        if jump_idx is not None:
+            # Combine into single integer (tuples not supported in Python 3.11+)
+            random.seed(hash((seed_val, jump_idx)) & 0xFFFFFFFF)
+        else:
+            random.seed(seed_val)
 
     ratio = random.uniform(ratio_min, ratio_max)
     inputlen = len(fuzz_input)
@@ -29,14 +33,14 @@ def fuzz(fuzz_input=None, seed_val=None, jump_idx=None, ratio_min=0.0,
     if range_list:
         chunksize = inputlen
 
-    for chunk_start in xrange(0, inputlen, chunksize):
+    for chunk_start in range(0, inputlen, chunksize):
         chunk_end = min(chunk_start + chunksize, inputlen)
         chunk_len = chunk_end - chunk_start
 
         if range_list:
-            chooselist = [x for x in xrange(inputlen) if _fuzzable(x, range_list)]
+            chooselist = [x for x in range(inputlen) if _fuzzable(x, range_list)]
         else:
-            chooselist = xrange(chunk_len)
+            chooselist = range(chunk_len)
         if fuzzable_chars is not None:
             chooselist = [x for x in chooselist if fuzz_input[x + chunk_start] in fuzzable_chars]
 

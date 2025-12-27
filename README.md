@@ -1,62 +1,215 @@
-This project contains the source code for the CERT Basic Fuzzing Framework (BFF)
+# CERT Basic Fuzzing Framework (BFF) - Python 3 Port
+
+This is a Python 3.11+ port of the CERT Basic Fuzzing Framework (BFF).
+
+**Original Project:** [CERTCC/certfuzz](https://github.com/CERTCC/certfuzz)
 
 BFF for Windows was formerly known as the CERT Failure Observation Engine (FOE).
 
-## If you are looking for runnable code, you should download the latest releases at: 
+## Requirements
 
-[BFF](https://www.sei.cmu.edu/forms/bff-download/)
+- **Python 3.11+** - Download from [python.org](https://www.python.org/downloads/)
+- **uv** - Modern Python package manager (recommended) - Install via `pip install uv` or see [uv documentation](https://docs.astral.sh/uv/)
 
-## Using this code 
+### Windows-Specific Requirements
 
-Depending on your preferred level of difficulty and experience points, choose from the options below.
+- **Windows SDK Debugging Tools** - Required for crash analysis
+  - Download from [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/)
+  - During installation, select only "Debugging Tools for Windows"
+- **!exploitable extension** (msec.dll) - For crash severity analysis
+  - Copy to the `winext` folder of your debugging tools installation
+
+### Dependencies
+
+BFF uses the following Python packages (automatically installed via uv):
+- numpy >= 1.24.0
+- scipy >= 1.11.0
+- PyYAML >= 6.0
+- pywin32 >= 306 (Windows only)
+- WMI >= 1.5.1 (Windows only)
+
+## Quick Start
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/CERTCC/certfuzz.git
+cd certfuzz
+
+# Install dependencies with uv
+uv sync
+```
+
+### Running BFF
+
+**Windows:**
+```powershell
+cd src\windows
+uv run bff.py
+```
+
+**Linux/macOS:**
+```bash
+cd src/linux
+uv run bff.py
+```
+
+## Getting Started with Fuzzing
+
+This guide will help you set up your first fuzzing campaign.
+
+### Step 1: Choose a Target Application
+
+Select an application that processes file input. Good candidates include:
+- Image viewers/converters (process PNG, JPEG, GIF, etc.)
+- Document readers (process PDF, DOC, etc.)
+- Media players (process MP3, MP4, etc.)
+- Archive utilities (process ZIP, TAR, etc.)
+
+### Step 2: Gather Seed Files
+
+Collect sample input files that your target application can process:
+- Use valid, well-formed files that the application handles correctly
+- Include variety - different sizes, features, and formats
+- Place seed files in the `seedfiles` directory
+
+### Step 3: Configure Your Campaign
+
+Copy and modify the example configuration file:
+
+**Windows:** `src/windows/configs/examples/bff.yaml`
+**Linux:** `src/linux/configs/bff.yaml`
+
+Key configuration sections:
+
+```yaml
+# Campaign identification
+campaign:
+    id: my_first_fuzz_campaign
+
+# Target application settings
+target:
+    program: C:\path\to\target.exe          # Path to target executable
+    cmdline_template: $PROGRAM $SEEDFILE    # How to invoke with a test file
+
+# Directory settings
+directories:
+    seedfile_dir: seedfiles\my_seeds        # Where your seed files are
+    working_dir: fuzzdir                    # Temporary working directory
+    results_dir: results                    # Where crash results are saved
+
+# Runtime settings
+runner:
+    runtimeout: 5                           # Seconds before killing hung process
+
+# Fuzzing strategy
+fuzzer:
+    fuzzer: bytemut                         # Mutation strategy (see below)
+```
+
+### Step 4: Understanding Fuzzer Options
+
+BFF supports several mutation strategies:
+
+| Fuzzer | Description | Best For |
+|--------|-------------|----------|
+| `bytemut` | Randomly replaces bytes | General-purpose fuzzing |
+| `swap` | Swaps adjacent bytes | Format-sensitive targets |
+| `wave` | Cycles through all byte values | Exhaustive testing |
+| `drop` | Removes bytes from file | Parser testing |
+| `insert` | Inserts random bytes | Buffer overflow detection |
+| `truncate` | Truncates file end | EOF handling bugs |
+
+### Step 5: Run Your Campaign
+
+```bash
+uv run bff.py
+```
+
+BFF will:
+1. Load seed files from your configured directory
+2. Apply mutations to create test cases
+3. Run each test case against your target
+4. Detect and log crashes
+5. Minimize crashing test cases (optional)
+6. Save unique crashes to the results directory
+
+### Step 6: Analyze Results
+
+Crashes are saved in your `results_dir` with:
+- The crashing test case file
+- Crash details and stack traces
+- Exploitability assessment (via !exploitable on Windows)
+
+Results are organized by crash signature (unique stack hash).
+
+### Tips for Effective Fuzzing
+
+1. **Use a RAM disk** for `working_dir` to reduce disk I/O and speed up fuzzing
+2. **Start with diverse seed files** - variety leads to better coverage
+3. **Set appropriate timeouts** - too short misses slow crashes, too long wastes time
+4. **Enable minimization** - smaller crash files are easier to analyze
+5. **Let it run** - some bugs only appear after thousands of iterations
+
+## Project Structure
+
+```
+certfuzz/
+├── src/
+│   ├── certfuzz/           # Core fuzzing framework
+│   │   ├── campaign/       # Campaign management
+│   │   ├── fuzzers/        # Mutation strategies
+│   │   ├── debuggers/      # Crash analysis
+│   │   ├── minimizer/      # Test case minimization
+│   │   └── ...
+│   ├── windows/            # Windows-specific code
+│   │   ├── bff.py          # Windows entry point
+│   │   └── configs/        # Example configurations
+│   └── linux/              # Linux/macOS-specific code
+│       ├── bff.py          # Linux entry point
+│       └── configs/        # Example configurations
+└── pyproject.toml          # Python project configuration
+```
+
+## Using the Code
 
 ### Easy
 
-Most of the BFF code can be found in the certfuzz package `src/certfuzz`. To try out the certfuzz code in an existing installation of BFF, replace the `certfuzz` directory in your installation with the `certfuzz` directory found in this repository.
+The BFF code is in the `src/certfuzz` package. To use this code with an existing BFF installation, replace the `certfuzz` directory in your installation with the one from this repository.
 
 ### Moderate
 
-Some platform-specific stuff is in `src/windows` and `src/linux`. BFF for OSX uses `src/linux` too. See `src/linux/README` and `src/windows/README.txt` for platform-specific readmes, and `src/linux/INSTALL` if you are feeling extra adventurous.
+Platform-specific code is in `src/windows` and `src/linux`. BFF for macOS uses `src/linux`. See the platform-specific README files for details.
 
-### Hard
+### Running Tests
 
-We actually use a continuous integration system with some platform-specific tools in conjunction with the code in the `build/` directory to build the releases found at the links above. However, at this time the build code is not expected to work anywhere other than that environment. In fact, the code in the master branch is svn-centric so it didn't even work when we switched to git. We've fixed that in our internal development system, but have not yet merged that in with the code posted here.
+```bash
+uv run python -m pytest src/test_certfuzz/ -v
+```
 
-Furthermore, the build scripts modify some files and move things around to put together the release packages and build installers. The filenames (but not necessarily the locations) in the `src/` directories usually stay intact though so you should be able to figure out where things go if you are looking outside the `src/certfuzz` directory. (As mentioned in the *Easy* section above, `src/certfuzz` should just be a drop-in replacement.)
+Note: Some tests are platform-specific (Linux-only tools like GDB, zzuf).
 
-If all that seems more like a challenge than a warning, go for it.
+## About BFF
 
-### Experimental 
+The CERT Basic Fuzzing Framework (BFF) is a software testing tool that finds defects in applications that run on Linux, macOS, and Windows.
 
-See `src/experimental/README.md` for some dead ends that might be marginally useful.
+BFF performs mutational fuzzing on software that consumes file input. It automatically collects test cases that cause software to crash in unique ways, along with debugging information associated with the crashes. The goal of BFF is to minimize the effort required for software vendors and security researchers to efficiently discover and analyze security vulnerabilities found via fuzzing.
 
-## About BFF 
+### Key Features
 
-The CERT Basic Fuzzing Framework (BFF) is a software testing tool that finds defects in applications that run on Linux, Mac OS X and Windows.
+- **Minimal configuration** - Start fuzzing quickly with sensible defaults
+- **Automatic recovery** - Handles common interruptions without manual intervention
+- **Intelligent deduplication** - Uses backtrace analysis to identify unique crashes
+- **Test case minimization** - Reduces crash files to minimal reproducing cases
+- **Machine learning** - Automatically optimizes fuzzing parameters over time
+- **Exploitability triage** - Assesses crash severity and potential exploitability
 
-BFF performs mutational fuzzing on software that consumes file input.  They automatically collect test cases that cause software to crash in unique ways, as well as debugging information associated with the crashes. The goal of BFF is to minimize the effort required for software vendors and security researchers to efficiently discover and analyze security vulnerabilities found via fuzzing.
+### Vulnerabilities Found with BFF
 
-Mutational fuzzing is the act of taking well-formed input data and corrupting it in various ways, looking for cases that cause crashes. BFF automatically collects test cases that cause software to crash in unique ways, as well as debugging information associated with the crashes. The goal of BFF is to minimize the effort required for software vendors and security researchers to efficiently discover and analyze security vulnerabilities found via fuzzing.
+At CERT/CC, we have used BFF to find critical vulnerabilities in products including Adobe Reader and Flash Player, Apple QuickTime and Preview, Foxit Reader, FFmpeg, Wireshark, and many others. See [Public Vulnerabilities Discovered Using BFF](https://github.com/CERTCC/certfuzz/wiki/Public-Vulnerabilities-Discovered-Using-BFF).
 
-Traditionally, fuzzing has been very effective at finding security vulnerabilities, but because of its inherently stochastic nature, results can be highly dependent on the initial configuration of the fuzzing system. BFF applies machine learning and evolutionary computing techniques to minimize the amount of manual configuration required to initiate and complete an effective fuzzing campaign. BFF adjusts its configuration parameters based on what it finds (or does not find) over the course of a fuzzing campaign. By doing so it can dramatically increase both the efficacy and efficiency of the campaign. As a result, expert knowledge is not required to configure an effective fuzz campaign, and novices and experts alike can start finding and analyzing vulnerabilities very quickly.
+## For More Information
 
-The following are some of the specific features that are available in BFF:
-
-- Minimal initial configuration is required to start a fuzzing campaign.
-- Minimal supervision of the fuzzing campaign is required, as BFF can automatically recover from many common problems that can interrupt fuzzing campaigns.
-- Uniqueness determination is handled through intelligent backtrace analysis.
-- Automated test-case minimization reduces the effort required to analyze results. This is achieved by distilling the test case to the minimal changes to the input data required to induce a specific crash.
-- Online machine learning is applied to fuzzing parameter and input file selection to improve the efficacy of the campaign.
-- Crash severity/exploitability triage is provided.
-
-At the CERT/CC, we have used the BFF infrastructure to find a number of critical vulnerabilities in products such as Adobe Reader and Flash Player; Foxit Reader; Apple QuickTime, Preview, and Mac OS X; Xpdf; Poppler; FFmpeg; JasPer; Wireshark; VMware VMnc video codec; the Indeo video codec; and many others. See [Public Vulnerabilities Discovered Using BFF](https://github.com/CERTCC/certfuzz/wiki/Public-Vulnerabilities-Discovered-Using-BFF).
-
-### A brief history of BFF and FOE ##
-
-BFF and FOE started out as two separate but related projects within the CERT/CC
-Vulnerability Analysis team. Over time, they converged in their architecture to the point where BFF 2.7 and FOE 2.1 shared much of their code. As of BFF 2.8, this integration is complete and we have retired the name FOE in favor of BFF.
-
-
-## For more information
-
-Blog posts about BFF and FOE can be found in the [CERT/CC Vulnerabilities](https://insights.sei.cmu.edu/blog/topics/certcc/) category on the [SEI Blog](https://insights.sei.cmu.edu/blog/)
+- [CERT/CC Vulnerabilities Blog](https://insights.sei.cmu.edu/blog/topics/certcc/)
+- [SEI Blog](https://insights.sei.cmu.edu/blog/)

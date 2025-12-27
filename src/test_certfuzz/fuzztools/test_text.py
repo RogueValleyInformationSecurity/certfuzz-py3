@@ -54,16 +54,16 @@ class Test(unittest.TestCase):
                 self.assertEqual('AAaa16', pat[96:102])
 
     def test__enumerate_string(self):
-        s = 'x____' * 1000
+        s = b'x____' * 1000
 
-        occurrences = sorted(random.sample(population=range(0, len(s), 5), k=102))
+        occurrences = sorted(random.sample(population=list(range(0, len(s), 5)), k=102))
         result = text._enumerate_string(s, occurrences)
         # length should be unchanged
         self.assertEqual(len(s), len(result))
 
-        # convert result to string
-        result = str(result)
-        self.assertNotEqual(s, result)
+        # convert result to string for comparison
+        result = result.decode('ascii')
+        self.assertNotEqual(s.decode('ascii'), result)
         # check 1 digit
         self.assertTrue('____1____' in result)
         # check 2 digit
@@ -73,7 +73,7 @@ class Test(unittest.TestCase):
 
     def test_enumerate_string(self):
         (fd, f) = tempfile.mkstemp(suffix='.foo', dir=self.tempdir)
-        os.write(fd, 'AAAAxxxAAAAxxxxxAAAAxAAAA')
+        os.write(fd, b'AAAAxxxAAAAxxxxxAAAAxAAAA')
         os.close(fd)
         root, ext = os.path.splitext(f)
         expected_newpath = '{}-enum{}'.format(root, ext)
@@ -86,7 +86,7 @@ class Test(unittest.TestCase):
 
         with open(newpath, 'rb') as fp:
             content = fp.read()
-            self.assertEqual('0AAAxxx1AAAxxxxx2AAAx3AAA', content)
+            self.assertEqual(b'0AAAxxx1AAAxxxxx2AAAx3AAA', content)
         os.remove(newpath)
         os.remove(f)
 

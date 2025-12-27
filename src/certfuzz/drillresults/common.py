@@ -3,7 +3,7 @@ Created on Jun 30, 2014
 
 @organization: cert.org
 '''
-import StringIO
+import io
 import argparse
 import logging
 import zipfile
@@ -126,18 +126,18 @@ def _read_zip(raw_file_byte_string):
     attempt to decompress it and return the concatenated contents of the
     decompressed zip
     :param raw_file_byte_string:
-    :return string of bytes
+    :return bytes
     '''
-    zbytes = str()
+    zbytes = b''
 
     # For zip files, return the uncompressed bytes
-    file_like_content = StringIO.StringIO(raw_file_byte_string)
+    file_like_content = io.BytesIO(raw_file_byte_string)
     if zipfile.is_zipfile(file_like_content):
         # Make sure that it's not an embedded zip
         # (e.g. a DOC file from Office 2007)
         file_like_content.seek(0)
         zipmagic = file_like_content.read(2)
-        if zipmagic == 'PK':
+        if zipmagic == b'PK':
             try:
                 # The file begins with the PK header
                 z = zipfile.ZipFile(file_like_content, 'r')

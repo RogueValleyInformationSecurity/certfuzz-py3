@@ -80,14 +80,15 @@ def _enumerate_string(content, occurences):
     '''
     counter = itertools.count()
     byte_buffer = bytearray(content)
-    for pos, count in itertools.izip(occurences, counter):
+    for pos, count in zip(occurences, counter):
         # turn the counter into a string
         substr = str(count)
         nbytes = len(substr)
         # replace the original bytes with the bytes of the counter string
-        for offset in xrange(nbytes):
+        for offset in range(nbytes):
             p = pos + offset
-            byte_buffer[p] = substr[offset]
+            # In Python 3, bytearray requires int assignment
+            byte_buffer[p] = ord(substr[offset])
     return byte_buffer
 
 
@@ -107,7 +108,9 @@ def enumerate_string(path=None, str_to_enum=None):
     newpath = get_newpath(oldpath=path, str_to_insert='-enum')
 
     # create a generator to find all start positions of the substring
-    occurences = (m.start() for m in re.finditer(str_to_enum, content))
+    # Ensure pattern is bytes to match bytes content
+    pattern = str_to_enum.encode() if isinstance(str_to_enum, str) else str_to_enum
+    occurences = (m.start() for m in re.finditer(pattern, content))
 
     newcontent = _enumerate_string(content, occurences)
 
@@ -117,5 +120,5 @@ def enumerate_string(path=None, str_to_enum=None):
 
 if __name__ == '__main__':
     for i in range(100):
-        print 'orig', i, metasploit_pattern_orig(i)
-        print 'extd', i, metasploit_pattern_extended(i)
+        print('orig', i, metasploit_pattern_orig(i))
+        print('extd', i, metasploit_pattern_extended(i))

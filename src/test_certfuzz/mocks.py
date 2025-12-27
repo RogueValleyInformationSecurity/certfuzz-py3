@@ -74,7 +74,7 @@ class MockSeedfile(Mock):
     rangefinder = MockRangefinder()
 
     def __init__(self, sz=1000):
-        self.value = 'A' * sz
+        self.value = b'A' * sz
         self.md5 = hashlib.md5(self.value).hexdigest()
         self.len = len(self.value)
 
@@ -83,7 +83,7 @@ class MockSeedfile(Mock):
 
 
 class MockFuzzedFile(Mock):
-    path = u'foo'
+    path = 'foo'
 
     def __init__(self, path=None):
         if path is not None:
@@ -111,7 +111,7 @@ class MockTestcase(Mock):
     seednum = 123456789
     range = MockRange()
     fuzzedfile = MockFuzzedFile()
-    pc = u'dummyPCstring'
+    pc = 'dummyPCstring'
     debugger_extension = 'abcdefg'
     dbg_outfile = 'xyz'
     target_dir = tempfile.mkdtemp()

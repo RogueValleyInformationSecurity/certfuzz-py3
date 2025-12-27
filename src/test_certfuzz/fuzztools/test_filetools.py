@@ -30,8 +30,8 @@ class Test(unittest.TestCase):
             pass
 
     def test_read_file(self):
-        fd, f = tempfile.mkstemp(dir=self.tempdir, text=True)
-        os.write(fd, 'fizzle')
+        fd, f = tempfile.mkstemp(dir=self.tempdir)
+        os.write(fd, b'fizzle')
         os.close(fd)
         result = read_text_file(f)
         self.assertEqual('fizzle', result)
@@ -159,12 +159,12 @@ class Test(unittest.TestCase):
         self.delete_file(fpath)
 
     def test_get_file_md5(self):
-        (fd, f) = tempfile.mkstemp(dir=self.tempdir, text=True)
+        (fd, f) = tempfile.mkstemp(dir=self.tempdir)
 
-        self.assertEqual(get_file_md5(f), hashlib.md5('').hexdigest())
-        alphabet = 'abcdefghijklmnopqrstuvwxyz'
+        self.assertEqual(get_file_md5(f), hashlib.md5(b'').hexdigest())
+        alphabet = b'abcdefghijklmnopqrstuvwxyz'
         alphabet_hash = hashlib.md5(alphabet).hexdigest()
-        os.write(fd, 'abcdefghijklmnopqrstuvwxyz')
+        os.write(fd, b'abcdefghijklmnopqrstuvwxyz')
 
         self.assertEqual(get_file_md5(f), alphabet_hash)
 
@@ -173,7 +173,7 @@ class Test(unittest.TestCase):
 
     def test_make_writable(self):
         (fd, f) = tempfile.mkstemp(dir=self.tempdir)
-        os.chmod(f, 0444)
+        os.chmod(f, 0o444)
         self.assertFalse(os.access(f, os.W_OK))
         filetools.make_writable(f)
         self.assertTrue(os.access(f, os.W_OK))
@@ -182,7 +182,8 @@ class Test(unittest.TestCase):
     def test_get_newpath(self):
         oldpath = '/path/to/foo.txt'
         newpath = filetools.get_newpath(oldpath, 'bar')
-        self.assertEqual('/path/to/foobar.txt', newpath)
+        # Use normpath to handle platform-specific path separators
+        self.assertEqual(os.path.normpath('/path/to/foobar.txt'), os.path.normpath(newpath))
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

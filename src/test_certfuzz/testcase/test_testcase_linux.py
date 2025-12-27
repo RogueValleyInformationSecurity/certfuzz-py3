@@ -22,7 +22,7 @@ class MockConfig(Mock):
 class MockFile(Mock):
     def __init__(self, tempdir):
         fd, f = tempfile.mkstemp(dir=tempdir)
-        os.write(fd, 'A' * 80)
+        os.write(fd, b'A' * 80)
         os.close(fd)
         self.path = f
         self.basename = os.path.basename(f)

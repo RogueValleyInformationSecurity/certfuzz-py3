@@ -40,9 +40,10 @@ class Test(unittest.TestCase):
                 f._fuzz()
                 self.assertEqual(len(f.output), self.sf.len - 1)
                 if x > 0:
-                    self.assertEqual(chr(f.output[x - 1]), self.sf.value[x])
+                    # In Python 3, both bytearray and bytes index to ints
+                    self.assertEqual(f.output[x - 1], self.sf.value[x])
                 if x < self.sf.len - 1:
-                    self.assertEqual(chr(f.output[x]), self.sf.value[x + 1])
+                    self.assertEqual(f.output[x], self.sf.value[x + 1])
 
     def test_fuzz_out_of_range(self):
         self.sf.tries = self.sf.len + 1

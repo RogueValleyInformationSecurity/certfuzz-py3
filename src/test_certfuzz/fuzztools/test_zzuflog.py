@@ -32,9 +32,9 @@ class Test(unittest.TestCase):
         self.assertEqual(self.log._get_last_line(), '')
 
         (fd, f) = tempfile.mkstemp(text=True)
-        os.write(fd, "firstline\n")
-        os.write(fd, "secondline\n")
-        os.write(fd, "thirdline\n")
+        os.write(fd, b"firstline\n")
+        os.write(fd, b"secondline\n")
+        os.write(fd, b"thirdline\n")
         os.close(fd)
 
         log = ZzufLog(f)
@@ -95,8 +95,8 @@ class Test(unittest.TestCase):
     def test_read_zzuf_log(self):
         (fd, f) = tempfile.mkstemp(text=True)
         line = "zzuf[s=%d,r=%s]: %s\n"
-        os.write(fd, line % (10, "0.1-0.2", "foo"))
-        os.write(fd, line % (85, "0.01-0.02", "bar"))
+        os.write(fd, (line % (10, "0.1-0.2", "foo")).encode())
+        os.write(fd, (line % (85, "0.01-0.02", "bar")).encode())
         os.close(fd)
 
         log = ZzufLog(f)

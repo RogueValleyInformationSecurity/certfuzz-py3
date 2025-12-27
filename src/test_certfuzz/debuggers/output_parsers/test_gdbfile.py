@@ -16,10 +16,10 @@ class _Test(unittest.TestCase):
         self.assertFalse(os.path.exists(f))
 
     def setUp(self):
-        (fd, f) = tempfile.mkstemp(text=True)
+        (fd, f) = tempfile.mkstemp()
         # write three lines to the temp file
-        os.write(fd, "\n".join(("abc", "def", "ghi")))
-        os.write(fd, '\n')
+        os.write(fd, b"\n".join((b"abc", b"def", b"ghi")))
+        os.write(fd, b'\n')
         os.close(fd)
 
         self.file = f

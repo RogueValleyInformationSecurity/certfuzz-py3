@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
             self.sf.tries = x
             with WaveFuzzer(*self.args) as f:
                 f._fuzz()
-                pos = x / 256  # note integer math
+                pos = x // 256  # note integer math
                 val = x % 256
                 self.assertEqual(f.output[pos], val)
 
