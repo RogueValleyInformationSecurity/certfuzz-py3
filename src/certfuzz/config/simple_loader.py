@@ -19,12 +19,25 @@ def load_config(yaml_file):
     Reads config from yaml_file, returns dict
     :param yaml_file: path to a yaml file containing the configuration
     '''
-    with open(yaml_file, 'r', encoding='utf-8') as f:
-        cfg = yaml.safe_load(f)
+    if not os.path.exists(yaml_file):
+        raise ConfigError(
+            f"Configuration file not found: {yaml_file}\n\n"
+            "To get started:\n"
+            "  1. Copy the example config:  configs/examples/bff.yaml -> configs/bff.yaml\n"
+            "  2. Edit configs/bff.yaml to set your target program and seed files\n"
+            "  3. Run bff.py again\n\n"
+            "Or specify a config file with:  bff.py -c /path/to/config.yaml"
+        )
+
+    try:
+        with open(yaml_file, 'r', encoding='utf-8') as f:
+            cfg = yaml.safe_load(f)
+    except yaml.YAMLError as e:
+        raise ConfigError(f"Invalid YAML in config file {yaml_file}: {e}")
 
     # yaml.load returns None if the file is empty. We need to raise an error
     if cfg is None:
-        raise ConfigError
+        raise ConfigError(f"Configuration file is empty: {yaml_file}")
 
     # add the file timestamp so we can tell if it changes later
     cfg['config_timestamp'] = os.path.getmtime(yaml_file)
